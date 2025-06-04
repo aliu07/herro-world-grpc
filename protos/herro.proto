@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package herro;
+
+service Herro {
+    rpc SayHerro (HerroRequest) returns (HerroResponse);
+}
+
+message HerroRequest {
+    string name = 1;
+}
+
+message HerroResponse {
+    string greeting = 1;
+}
