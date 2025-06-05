@@ -3,7 +3,7 @@ syntax = "proto3";
 package herro;
 
 service Herro {
-    rpc SayHerro (HerroRequest) returns (HerroResponse);
+    rpc SayHerro(HerroRequest) returns (HerroResponse);
 }
 
 message HerroRequest {
@@ -12,4 +12,18 @@ message HerroRequest {
 
 message HerroResponse {
     string greeting = 1;
+}
+
+message CountResponse {
+    int64 count = 1;
+}
+
+service Admin {
+    rpc GetRequestCount(GetCountRequest) returns (CounterResponse);
+}
+
+message GetCountRequest {}
+
+message CounterResponse {
+    uint64 count = 1;
 }

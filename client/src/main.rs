@@ -1,31 +1,55 @@
 use herro::{HerroRequest, herro_client::HerroClient};
 use std::io::stdin;
 
+use crate::herro::{GetCountRequest, admin_client::AdminClient};
+
 pub mod herro {
     tonic::include_proto!("herro");
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = HerroClient::connect("http://[::1]:8080").await?;
+    let mut herro_client = HerroClient::connect("http://[::1]:8080").await?;
+    let mut admin_client = AdminClient::connect("http://[::1]:8080").await?;
 
     loop {
-        println!("\nPlease enter your name:");
-        let mut name = String::new();
-        stdin().read_line(&mut name).unwrap();
-        let name = name.trim();
+        println!("\nPlease enter a command:");
+        let mut cmd = String::new();
+        stdin().read_line(&mut cmd).unwrap();
+        let cmd = cmd.trim();
 
-        if name.to_lowercase() == "quit" {
-            break;
+        match cmd {
+            "quit" => break,
+            "help" => {
+                println!("Available commands:");
+                println!("- quit");
+                println!("- hello");
+                println!("- count");
+            }
+            "herro" => {
+                println!("\nPlease enter your name:");
+                let mut name = String::new();
+                stdin().read_line(&mut name).unwrap();
+                let name = name.trim();
+
+                // Service invocation
+                let request = tonic::Request::new(HerroRequest {
+                    name: String::from(name),
+                });
+
+                let response = herro_client.say_herro(request).await?;
+                println!("Got '{}' from service!", response.into_inner().greeting);
+            }
+            "count" => {
+                let request = tonic::Request::new(GetCountRequest {});
+
+                let response = admin_client.get_request_count(request).await?;
+                println!("Got '{}' from service!", response.into_inner().count);
+            }
+            _ => {
+                println!("Unkown command. Type 'help' for a list of commands.");
+            }
         }
-
-        // Service invocation
-        let request = tonic::Request::new(HerroRequest {
-            name: String::from(name),
-        });
-
-        let response = client.say_herro(request).await?;
-        println!("Got '{}' from service!", response.into_inner().greeting);
     }
 
     Ok(())
