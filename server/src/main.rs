@@ -3,6 +3,7 @@ use herro::{
     HerroRequest, HerroResponse,
     herro_server::{Herro, HerroServer},
 };
+use tonic::metadata::MetadataValue;
 use tonic::{Request, Response, Status, transport::Server};
 
 pub mod herro {
@@ -66,6 +67,23 @@ impl Herro for HerroService {
     }
 }
 
+fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {
+    let token: MetadataValue<_> = "123456".parse().unwrap();
+
+    match req.metadata().get("authorization") {
+        Some(t) => {
+            if t == token {
+                Ok(req)
+            } else {
+                Err(Status::permission_denied("Wrong authentication token"))
+            }
+        }
+        _ => Err(Status::unauthenticated(
+            "No valid authentication token found",
+        )),
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let address = "[::1]:8080".parse().unwrap();
@@ -82,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(HerroServer::new(herro_service))
-        .add_service(AdminServer::new(admin_service))
+        .add_service(AdminServer::with_interceptor(admin_service, check_auth))
         .serve(address)
         .await?;
 

@@ -1,5 +1,6 @@
 use herro::{HerroRequest, herro_client::HerroClient};
 use std::io::stdin;
+use tonic::metadata::{Ascii, MetadataValue};
 
 use crate::herro::{GetCountRequest, admin_client::AdminClient};
 
@@ -41,7 +42,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Got '{}' from service!", response.into_inner().greeting);
             }
             "count" => {
-                let request = tonic::Request::new(GetCountRequest {});
+                let mut request = tonic::Request::new(GetCountRequest {});
+
+                // Header metadata
+                let my_secret_token: MetadataValue<Ascii> = MetadataValue::from_static("123456");
+                request
+                    .metadata_mut()
+                    .insert("authorization", my_secret_token);
 
                 let response = admin_client.get_request_count(request).await?;
                 println!("Got '{}' from service!", response.into_inner().count);
