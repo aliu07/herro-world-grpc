@@ -2,10 +2,14 @@ use herro::{HerroRequest, herro_client::HerroClient};
 use std::io::stdin;
 use tonic::metadata::{Ascii, MetadataValue};
 
-use crate::herro::{GetCountRequest, admin_client::AdminClient};
+use crate::admin::{GetCountRequest, admin_client::AdminClient};
 
 pub mod herro {
     tonic::include_proto!("herro");
+}
+
+pub mod admin {
+    tonic::include_proto!("admin");
 }
 
 #[tokio::main]

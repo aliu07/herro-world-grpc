@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package admin;
+
+service Admin {
+    rpc GetRequestCount(GetCountRequest) returns (CounterResponse);
+}
+
+message GetCountRequest {}
+
+message CounterResponse {
+    uint64 count = 1;
+}
